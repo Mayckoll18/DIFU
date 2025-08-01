@@ -26,26 +26,6 @@
       font-weight: 700;
       margin-bottom: 30px;
     }
-    h2 {
-      color: #004d3f;
-      font-size: 1.75rem;
-      font-weight: 600;
-    }
-    .card {
-      background-color: #e9f4eb;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 30px;
-    }
-    .card h3 {
-      color: #004d3f;
-      font-size: 1.5rem;
-      margin-bottom: 10px;
-    }
-    .card p {
-      color: #666;
-      font-size: 1rem;
-    }
     .form-label {
       font-weight: 500;
     }
@@ -53,28 +33,20 @@
       border-color: #28a745;
       box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
     }
+    .alert-danger {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
     .btn-success {
       background-color: #28a745;
       border-color: #28a745;
-    }
-    .btn-outline-secondary {
-      border-color: #6c757d;
-    }
-    .alert-info {
-      background-color: #d1f5e2;
-      border-color: #28a745;
-      color: #004d3f;
-    }
-    .text-muted {
-      color: #6c757d !important;
     }
     .grafico-container {
       text-align: center;
       margin-top: 30px;
     }
-    .grafico-container canvas {
-      width: 120px !important;
-      height: 120px !important;
+    .table {
+      margin-top: 20px;
     }
   </style>
 </head>
@@ -83,25 +55,20 @@
     <!-- Título -->
     <h1>DIFU - Detección e Identificación de Infección Fúngica</h1>
 
-    <!-- Sección explicativa -->
-    <div class="card">
-      <h3>¿Qué es DIFU?</h3>
-      <p><strong>DIFU</strong> significa "Detección e Identificación de Infección Fúngica". Este modelo de inteligencia artificial está diseñado para predecir la probabilidad de infección fúngica en los suelos basándose en características químicas y físicas. Al proporcionar parámetros como el pH, la materia orgánica y el contenido de nutrientes, el modelo realiza una predicción que puede ayudar a los agricultores y expertos en agricultura a tomar decisiones informadas sobre el tratamiento del suelo.</p>
-      <h4>¿Cómo Funciona?</h4>
-      <p>El modelo utiliza un algoritmo de regresión lineal entrenado con datos de muestras de suelo para predecir la probabilidad de infección fúngica. Los usuarios pueden ingresar diversos parámetros del suelo, y el modelo genera una estimación en porcentaje sobre la posibilidad de infección fúngica, lo que puede ser crucial para tomar acciones preventivas y correctivas.</p>
-    </div>
-
     <!-- Mostrar error si lo hay -->
     {% if error %}
-      <div class="alert alert-danger text-center">{{ error }}</div>
+      <div class="alert alert-danger">
+        {{ error }}
+      </div>
     {% endif %}
 
+    <!-- Formulario para ingresar los datos -->
     <form method="POST">
       <div class="row">
         {% for campo in ['ph', 'mo', 'fosforo', 'potasio', 'sodio', 'calcio', 'magnesio', 'acidez', 'aluminio', 'hierro', 'cobre', 'manganeso', 'zinc'] %}
           <div class="col-md-4 mb-3">
             <label class="form-label">{{ campo.replace('_', ' ').capitalize() }}</label>
-            <input type="number" step="any" class="form-control" name="{{ campo }}" required min="0">
+            <input type="number" step="any" class="form-control" name="{{ campo }}" required min="0" placeholder="Introduce el valor de {{ campo.replace('_', ' ').capitalize() }}">
           </div>
         {% endfor %}
       </div>
@@ -109,43 +76,45 @@
       <a href="/" class="btn btn-outline-secondary w-100 mt-2">Limpiar formulario</a>
     </form>
 
-    <!-- Mostrar resultado -->
+    <!-- Mostrar resultado si está disponible -->
     {% if resultado is not none %}
-      <div class="alert alert-info text-center mt-4 fs-4">
-        Probabilidad estimada de infección: <strong>{{ resultado }}%</strong>
+      <div class="alert alert-success">
+        Probabilidad estimada de infección: {{ resultado }}%
       </div>
 
-      <!-- Gráfico circular -->
+      <!-- Tabla con resultados -->
       <div class="grafico-container">
-        <canvas id="grafico"></canvas>
+        <canvas id="grafico" width="150" height="150"></canvas>
       </div>
-
-      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-      <script>
-        const ctx = document.getElementById('grafico');
-        new Chart(ctx, {
-          type: 'doughnut',
-          data: {
-            labels: ['Infección', 'Saludable'],
-            datasets: [{
-              data: [{{ resultado }}, {{ 100 - resultado }}],
-              backgroundColor: ['#dc3545', '#28a745'],
-              borderColor: ['#dc3545', '#28a745'],
-              borderWidth: 1
-            }]
-          },
-          options: {
-            plugins: {
-              legend: {
-                display: true,
-                position: 'bottom'
-              }
-            }
-          }
-        });
-      </script>
     {% endif %}
   </div>
+
+  <!-- Gráficos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    {% if resultado is not none %}
+      const ctx = document.getElementById('grafico').getContext('2d');
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Infección', 'Saludable'],
+          datasets: [{
+            data: [{{ resultado }}, {{ 100 - resultado }}],
+            backgroundColor: ['#dc3545', '#28a745'],
+            borderColor: ['#dc3545', '#28a745'],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          plugins: {
+            legend: {
+              display: true,
+              position: 'bottom'
+            }
+          }
+        }
+      });
+    {% endif %}
+  </script>
 </body>
 </html>
-
