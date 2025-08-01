@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DIFU - Detección e Identificación de Infección Fúngica</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f4f8f6;
+      margin-top: 20px;
+    }
+    .container {
+      max-width: 900px;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      color: #004d3f;
+      text-align: center;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 30px;
+    }
+    h2 {
+      color: #004d3f;
+      font-size: 1.75rem;
+      font-weight: 600;
+    }
+    .card {
+      background-color: #e9f4eb;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    .card h3 {
+      color: #004d3f;
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+    .card p {
+      color: #666;
+      font-size: 1rem;
+    }
+    .form-label {
+      font-weight: 500;
+    }
+    .form-control:focus {
+      border-color: #28a745;
+      box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    }
+    .btn-success {
+      background-color: #28a745;
+      border-color: #28a745;
+    }
+    .btn-outline-secondary {
+      border-color: #6c757d;
+    }
+    .alert-info {
+      background-color: #d1f5e2;
+      border-color: #28a745;
+      color: #004d3f;
+    }
+    .text-muted {
+      color: #6c757d !important;
+    }
+    .grafico-container {
+      text-align: center;
+      margin-top: 30px;
+    }
+    .grafico-container canvas {
+      width: 120px !important;
+      height: 120px !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Título -->
+    <h1>DIFU - Detección e Identificación de Infección Fúngica</h1>
+
+    <!-- Sección explicativa -->
+    <div class="card">
+      <h3>¿Qué es DIFU?</h3>
+      <p><strong>DIFU</strong> significa "Detección e Identificación de Infección Fúngica". Este modelo de inteligencia artificial está diseñado para predecir la probabilidad de infección fúngica en los suelos basándose en características químicas y físicas. Al proporcionar parámetros como el pH, la materia orgánica y el contenido de nutrientes, el modelo realiza una predicción que puede ayudar a los agricultores y expertos en agricultura a tomar decisiones informadas sobre el tratamiento del suelo.</p>
+      <h4>¿Cómo Funciona?</h4>
+      <p>El modelo utiliza un algoritmo de regresión lineal entrenado con datos de muestras de suelo para predecir la probabilidad de infección fúngica. Los usuarios pueden ingresar diversos parámetros del suelo, y el modelo genera una estimación en porcentaje sobre la posibilidad de infección fúngica, lo que puede ser crucial para tomar acciones preventivas y correctivas.</p>
+    </div>
+
+    <!-- Mostrar error si lo hay -->
+    {% if error %}
+      <div class="alert alert-danger text-center">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST">
+      <div class="row">
+        {% for campo in ['ph', 'mo', 'fosforo', 'potasio', 'sodio', 'calcio', 'magnesio', 'acidez', 'aluminio', 'hierro', 'cobre', 'manganeso', 'zinc'] %}
+          <div class="col-md-4 mb-3">
+            <label class="form-label">{{ campo.replace('_', ' ').capitalize() }}</label>
+            <input type="number" step="any" class="form-control" name="{{ campo }}" required min="0">
+          </div>
+        {% endfor %}
+      </div>
+      <button type="submit" class="btn btn-success w-100">Predecir infección</button>
+      <a href="/" class="btn btn-outline-secondary w-100 mt-2">Limpiar formulario</a>
+    </form>
+
+    <!-- Mostrar resultado -->
+    {% if resultado is not none %}
+      <div class="alert alert-info text-center mt-4 fs-4">
+        Probabilidad estimada de infección: <strong>{{ resultado }}%</strong>
+      </div>
+
+      <!-- Gráfico circular -->
+      <div class="grafico-container">
+        <canvas id="grafico"></canvas>
+      </div>
+
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      <script>
+        const ctx = document.getElementById('grafico');
+        new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Infección', 'Saludable'],
+            datasets: [{
+              data: [{{ resultado }}, {{ 100 - resultado }}],
+              backgroundColor: ['#dc3545', '#28a745'],
+              borderColor: ['#dc3545', '#28a745'],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            plugins: {
+              legend: {
+                display: true,
+                position: 'bottom'
+              }
+            }
+          }
+        });
+      </script>
+    {% endif %}
+  </div>
+</body>
+</html>
+
